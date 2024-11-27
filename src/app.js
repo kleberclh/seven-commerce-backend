@@ -4,6 +4,7 @@ import cors from "cors"
 import path from "path";
 
 import { fileURLToPath } from 'url';
+import userRouter from "./routers/auth/userRouter.js";
 
 // Obter o diretório atual de forma compatível com ES6
 const __filename = fileURLToPath(import.meta.url);
@@ -23,6 +24,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+app.use(userRouter)
   
 
 export default app

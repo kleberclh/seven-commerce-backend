@@ -1,0 +1,28 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f9;
+  text-align: center;
+}
+ul {
+  padding: 0;
+  text-align: left;
+}
+h1 {
+  color: #333;
+}
+p {
+  color: #555;
+}
+.version {
+  color: green;
+}
+li {
+  list-style-type: circle;
+}
+.box {
+  display: flex;
+  justify-content: center;
+}
