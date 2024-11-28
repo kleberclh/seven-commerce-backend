@@ -1,61 +1,72 @@
 import { PrismaClient } from "@prisma/client";
-import jwt from "jsonwebtoken";
 const prisma = new PrismaClient();
 
 // Criar um pedido
 async function create(req, res) {
-    try {
-      // O usuarioId é obtido diretamente do req.user configurado pelo middleware authenticateToken
-      const usuarioId = req.user.id;
-  
-      if (!usuarioId) {
-        return res.status(401).json({ success: false, message: "Usuário não encontrado." });
-      }
-  
-      const { total, produtos } = req.body;
-  
-      // Validar os produtos
-      const produtosValidos = await prisma.produto.findMany({
-        where: { id: { in: produtos.map((p) => p.produtoId) } },
-      });
-  
-      if (produtosValidos.length !== produtos.length) {
-        return res.status(400).json({
-          success: false,
-          message: "Um ou mais produtos não existem.",
-        });
-      }
-  
-      // Criar o pedido e os itens do pedido
-      const pedido = await prisma.pedido.create({
-        data: {
-          usuario: { connect: { id: usuarioId } }, // Associando o pedido ao usuário
-          total,
-          produtos: {
-            create: produtos.map((p) => ({
-              produtoId: p.produtoId,
-              quantidade: p.quantidade,
-            })),
-          },
-        },
-        include: {
-          produtos: true,
-        },
-      });
-  
-      return res.status(201).json({
-        success: true,
-        message: "Pedido criado com sucesso.",
-        data: pedido,
-      });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({
+  try {
+    // O usuarioId é obtido diretamente do req.user configurado pelo middleware authenticateToken
+    const usuarioId = req.user.id;
+
+    if (!usuarioId) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Usuário não encontrado." });
+    }
+
+    const { produtos } = req.body;
+
+    // Validar os produtos
+    const produtosNoBanco = await prisma.produto.findMany({
+      where: { id: { in: produtos.map((p) => p.produtoId) } },
+      select: { id: true, preco: true }, // Obtém apenas o ID e o preço dos produtos
+    });
+
+    if (produtosNoBanco.length !== produtos.length) {
+      return res.status(400).json({
         success: false,
-        message: "Ocorreu um erro inesperado.",
+        message: "Um ou mais produtos não existem.",
       });
     }
+
+    // Calcular o valor total
+    const total = produtos.reduce((acc, item) => {
+      const produto = produtosNoBanco.find((p) => p.id === item.produtoId);
+      if (!produto) {
+        throw new Error("Produto inválido encontrado.");
+      }
+      return acc + produto.preco * item.quantidade;
+    }, 0);
+
+    // Criar o pedido e os itens do pedido
+    const pedido = await prisma.pedido.create({
+      data: {
+        usuario: { connect: { id: usuarioId } }, // Associando o pedido ao usuário
+        total,
+        produtos: {
+          create: produtos.map((p) => ({
+            produtoId: p.produtoId,
+            quantidade: p.quantidade,
+          })),
+        },
+      },
+      include: {
+        produtos: true,
+      },
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Pedido criado com sucesso.",
+      data: pedido,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Ocorreu um erro inesperado.",
+    });
   }
+}
 
 // Listar pedidos
 async function list(req, res) {
