@@ -20,29 +20,38 @@ model User {
   email    String   @unique
   password String
   pedidos  Pedido[]
-  isAdmin       Boolean   @default(false)
+  isAdmin  Boolean  @default(false)
 }
 
 model Pedido {
-  id        Int       @id @default(autoincrement())
-  uuid      String    @unique @default(uuid())
+  id        Int               @id @default(autoincrement())
+  uuid      String            @unique @default(uuid())
   usuarioId Int
-  usuario   User      @relation(fields: [usuarioId], references: [id])
-  produtos  Produto[] // Alterado de Produtos para produto (consistência no nome de array)
+  usuario   User              @relation(fields: [usuarioId], references: [id])
   total     Float
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  produtos  ProdutoNoPedido[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
 }
 
 model Produto {
-  id         Int      @id @default(autoincrement())
-  uuid       String   @unique @default(uuid())
+  id              Int               @id @default(autoincrement())
+  uuid            String            @unique @default(uuid())
+  titulo          String
+  descricao       String
+  preco           Float
+  quantidade      Int
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  ProdutoNoPedido ProdutoNoPedido[]
+}
+
+model ProdutoNoPedido {
+  id         Int @id @default(autoincrement())
   pedidoId   Int
-  descricao  String
-  preco      Float
+  produtoId  Int
   quantidade Int
-  total      Float
-  pedido     Pedido   @relation(fields: [pedidoId], references: [id])
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+
+  pedido  Pedido  @relation(fields: [pedidoId], references: [id])
+  produto Produto @relation(fields: [produtoId], references: [id])
 }

@@ -63,7 +63,7 @@ async function login(req, res) {
     }
 
     const token = jwt.sign(
-      { uuid: user.uuid, nome: user.nome, isAdmin: user.isAdmin },
+      { uuid: user.uuid, nome: user.nome, isAdmin: user.isAdmin, userId: user.id },
       process.env.SECRET,
       {
         expiresIn: "10h",
@@ -75,6 +75,7 @@ async function login(req, res) {
       user_uuid: user.uuid,
       name: user.nome,
       isAdmin: user.isAdmin,
+      userId: user.id,
     });
   } catch (error) {
     res.status(400).json({ message: error.message });

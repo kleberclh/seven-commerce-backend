@@ -5,6 +5,8 @@ import path from "path";
 
 import { fileURLToPath } from 'url';
 import userRouter from "./routers/auth/userRouter.js";
+import productRouter from "./routers/products/router_products.js";
+import orderRouter from "./routers/orders/router_order.js";
 
 // Obter o diretório atual de forma compatível com ES6
 const __filename = fileURLToPath(import.meta.url);
@@ -26,6 +28,8 @@ app.get('/', (req, res) => {
 });
 
 app.use(userRouter)
+app.use(productRouter)
+app.use(orderRouter)
   
 
 export default app
