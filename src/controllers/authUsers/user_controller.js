@@ -7,7 +7,7 @@ async function usuarios(req, res) {
       const users = await prisma.user.findMany({
         select: {
           id: true,
-          uuid: true, // Mantido como uuid
+          uuid: true,
           name: true,
           email: true,
           isAdmin: true,
