@@ -4,7 +4,6 @@ const prisma = new PrismaClient();
 // Criar um pedido
 async function create(req, res) {
   try {
-    // O usuarioId é obtido diretamente do req.user configurado pelo middleware authenticateToken
     const usuarioId = req.user.id;
 
     if (!usuarioId) {
@@ -15,10 +14,14 @@ async function create(req, res) {
 
     const { produtos } = req.body;
 
-    // Validar os produtos
+    // Validar os produtos e obter informações do banco
     const produtosNoBanco = await prisma.produto.findMany({
       where: { id: { in: produtos.map((p) => p.produtoId) } },
-      select: { id: true, preco: true }, // Obtém apenas o ID e o preço dos produtos
+      select: {
+        id: true,
+        preco: true,
+        titulo: true,
+      }, // Inclua o título
     });
 
     if (produtosNoBanco.length !== produtos.length) {
@@ -40,13 +43,19 @@ async function create(req, res) {
     // Criar o pedido e os itens do pedido
     const pedido = await prisma.pedido.create({
       data: {
-        usuario: { connect: { id: usuarioId } }, // Associando o pedido ao usuário
+        usuario: { connect: { id: usuarioId } },
         total,
         produtos: {
-          create: produtos.map((p) => ({
-            produtoId: p.produtoId,
-            quantidade: p.quantidade,
-          })),
+          create: produtos.map((p) => {
+            const produtoNoBanco = produtosNoBanco.find(
+              (prod) => prod.id === p.produtoId
+            );
+            return {
+              produtoId: p.produtoId,
+              titulo: produtoNoBanco.titulo, // Adicione o título aqui
+              quantidade: p.quantidade,
+            };
+          }),
         },
       },
       include: {
@@ -74,6 +83,7 @@ async function list(req, res) {
     const orders = await prisma.pedido.findMany({
       include: {
         usuario: true,
+        
         produtos: {
           include: {
             produto: true,

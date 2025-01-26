@@ -29,7 +29,7 @@ model Pedido {
   usuarioId Int
   usuario   User              @relation(fields: [usuarioId], references: [id])
   total     Float
-  produtos  ProdutoNoPedido[]
+  produtos  ProdutosItens[]
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
 }
@@ -43,13 +43,14 @@ model Produto {
   quantidade      Int
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
-  ProdutoNoPedido ProdutoNoPedido[]
+  ProdutosItens ProdutosItens[]
 }
 
-model ProdutoNoPedido {
-  id         Int @id @default(autoincrement())
+model ProdutosItens {
+  id         Int    @id @default(autoincrement())
   pedidoId   Int
   produtoId  Int
+  titulo     String
   quantidade Int
 
   pedido  Pedido  @relation(fields: [pedidoId], references: [id])
