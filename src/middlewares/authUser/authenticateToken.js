@@ -12,7 +12,11 @@ const authenticateToken = (req, res, next) => {
     if (error) {
       return res.status(403).json({ message: "Token inválido!" });
     }
-    req.user = { id: user.userId };
+    req.user = {
+      id: user.userId,
+      isAdmin: user.isAdmin, //informado o isAdmin: user.isAdmin para o retorno dar certo pelo token
+      email: user.email,
+    };
     next();
   });
 };
