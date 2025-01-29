@@ -16,6 +16,8 @@ const authenticateToken = (req, res, next) => {
       id: user.userId,
       isAdmin: user.isAdmin, //informado o isAdmin: user.isAdmin para o retorno dar certo pelo token
       email: user.email,
+      name: user.name,
+      uuid: user.uuid,
     };
     next();
   });

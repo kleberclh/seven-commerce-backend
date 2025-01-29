@@ -65,7 +65,7 @@ async function login(req, res) {
     const token = jwt.sign(
       {
         uuid: user.uuid,
-        nome: user.nome,
+        name: user.name,
         isAdmin: user.isAdmin,
         userId: user.id,
       },
@@ -78,7 +78,7 @@ async function login(req, res) {
     res.json({
       token,
       user_uuid: user.uuid,
-      name: user.nome,
+      name: user.name,
       isAdmin: user.isAdmin,
       userId: user.id,
     });
