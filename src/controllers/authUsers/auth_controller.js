@@ -87,7 +87,42 @@ async function login(req, res) {
   }
 }
 
+async function me(req, res) {
+  try {
+    const userId = req.user.id;
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Usuário não encontrado." });
+    }
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      include:{
+        pedidos: {
+          include: {
+            produtos: true,
+          },
+        },
+      }
+    });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Usuário não encontrado." });
+    }
+
+    res.json(user);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
 export default {
   registrar,
   login,
+  me
 };
