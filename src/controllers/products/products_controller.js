@@ -32,7 +32,7 @@ async function list(req, res) {
     const products = await prisma.produto.findMany();
     res.json({
       success: true,
-      data: products,
+      produto: products,
     });
   } catch (error) {
     console.error(error);
