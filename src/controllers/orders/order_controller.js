@@ -83,7 +83,7 @@ async function list(req, res) {
     const orders = await prisma.pedido.findMany({
       include: {
         usuario: true,
-        
+
         produtos: {
           include: {
             produto: true,
@@ -162,9 +162,99 @@ async function remove(req, res) {
   }
 }
 
+async function getByUuid(req, res) {
+  try {
+    const { uuid } = req.params;
+
+    const order = await prisma.pedido.findUnique({
+      where: { uuid },
+      include: {
+        usuario: {
+          select: {
+            id: true,
+            uuid: true,
+            name: true,
+            email: true,
+            password: true,
+            isAdmin: true,
+          },
+        },
+        produtos: {
+          include: {
+            produto: {
+              select: {
+                id: true,
+                uuid: true,
+                titulo: true,
+                descricao: true,
+                preco: true,
+                quantidade: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Pedido não encontrado.",
+      });
+    }
+
+    // Formatando a saída conforme o esperado
+    const formattedOrder = {
+      id: order.id,
+      uuid: order.uuid,
+      usuarioId: order.usuario.id,
+      total: order.total,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+      usuario: {
+        id: order.usuario.id,
+        uuid: order.usuario.uuid,
+        name: order.usuario.name,
+        email: order.usuario.email,
+      },
+      produtos: order.produtos.map((produtoPedido) => ({
+        id: produtoPedido.id,
+        pedidoId: order.id,
+        produtoId: produtoPedido.produtoId,
+        titulo: produtoPedido.titulo,
+        quantidade: produtoPedido.quantidade,
+        produto: {
+          id: produtoPedido.produto.id,
+          uuid: produtoPedido.produto.uuid,
+          titulo: produtoPedido.produto.titulo,
+          descricao: produtoPedido.produto.descricao,
+          preco: produtoPedido.produto.preco,
+          quantidade: produtoPedido.produto.quantidade,
+          createdAt: produtoPedido.produto.createdAt,
+          updatedAt: produtoPedido.produto.updatedAt,
+        },
+      })),
+    };
+
+    res.json({
+      success: true,
+      data: formattedOrder,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Ocorreu um erro ao buscar o pedido.",
+    });
+  }
+}
+
 export default {
   create,
   list,
   update,
   remove,
+  getByUuid,
 };

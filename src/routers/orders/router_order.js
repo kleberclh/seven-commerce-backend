@@ -4,8 +4,8 @@ import authenticateToken from "../../middlewares/authUser/authenticateToken.js";
 
 const orderRouter = Router();
 
-orderRouter.post('/order',authenticateToken,order_controller.create)
-orderRouter.get('/order',authenticateToken,order_controller.list)
-
+orderRouter.post("/order", authenticateToken, order_controller.create);
+orderRouter.get("/order", authenticateToken, order_controller.list);
+orderRouter.get("/order/:uuid", authenticateToken, order_controller.getByUuid);
 
 export default orderRouter;
