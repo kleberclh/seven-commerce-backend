@@ -21,28 +21,43 @@ model User {
   password String
   pedidos  Pedido[]
   isAdmin  Boolean  @default(false)
+
+  cpf         String? @unique
+  telefone    String?
+  rua         String?
+  numero      String?
+  cep         String?
+  pais        String?
+  bairro      String?
+  cidade      String?
+  estado      String?
+  complemento String?
+  imagem      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Pedido {
-  id        Int               @id @default(autoincrement())
-  uuid      String            @unique @default(uuid())
+  id        Int             @id @default(autoincrement())
+  uuid      String          @unique @default(uuid())
   usuarioId Int
-  usuario   User              @relation(fields: [usuarioId], references: [id])
+  usuario   User            @relation(fields: [usuarioId], references: [id])
   total     Float
   produtos  ProdutosItens[]
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 }
 
 model Produto {
-  id              Int               @id @default(autoincrement())
-  uuid            String            @unique @default(uuid())
-  titulo          String
-  descricao       String
-  preco           Float
-  quantidade      Int
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id            Int             @id @default(autoincrement())
+  uuid          String          @unique @default(uuid())
+  titulo        String
+  descricao     String
+  preco         Float
+  quantidade    Int
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   ProdutosItens ProdutosItens[]
 }
 
