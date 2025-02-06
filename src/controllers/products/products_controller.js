@@ -1,6 +1,35 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
+
+
+async function getByUuid(req, res) {
+  try {
+    const { uuid } = req.params;
+    const product = await prisma.produto.findUnique({
+      where: { uuid },
+    });
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Produto não encontrado",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: product,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Ocorreu um erro inesperado",
+    });
+  }
+}
+
 async function create(req, res) {
   try {
     const { titulo, descricao, preco, quantidade } = req.body;
@@ -32,7 +61,7 @@ async function list(req, res) {
     const products = await prisma.produto.findMany();
     res.json({
       success: true,
-      data: products,
+      produto: products,
     });
   } catch (error) {
     console.error(error);
@@ -87,6 +116,7 @@ async function remove(req, res) {
   }
 }
 export default {
+  getByUuid,
   create,
   list,
   update,
