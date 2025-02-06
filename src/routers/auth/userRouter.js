@@ -10,6 +10,7 @@ const userRouter = Router();
 userRouter.get("/me", authenticateToken, userController.me);
 userRouter.post("/registrar", userController.registrar);
 userRouter.post("/login", userController.login);
+userRouter.put("/atualizar", authenticateToken, userController.updateUser);
 userRouter.get(
   "/usuarios",
   authenticateToken,
