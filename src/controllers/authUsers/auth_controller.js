@@ -100,13 +100,13 @@ async function me(req, res) {
       where: {
         id: userId,
       },
-      include:{
+      include: {
         pedidos: {
           include: {
             produtos: true,
           },
         },
-      }
+      },
     });
 
     if (!user) {
@@ -124,5 +124,5 @@ async function me(req, res) {
 export default {
   registrar,
   login,
-  me
+  me,
 };
