@@ -121,54 +121,8 @@ async function me(req, res) {
   }
 }
 
-async function updateUser(req, res) {
-  try {
-    const userId = req.user.uuid;
-    const {
-      name,
-      email,
-      rua,
-      cep,
-      estado,
-      pais,
-      telefone,
-      cpf,
-      numero,
-      bairro,
-      cidade,
-      complemento,
-    } = req.body;
-
-    const updateUser = await prisma.user.update({
-      where: { uuid: userId },
-      data: {
-        name,
-        email,
-        rua,
-        cep,
-        estado,
-        pais,
-        telefone,
-        cpf,
-        numero,
-        bairro,
-        cidade,
-        complemento,
-      },
-    });
-    res.json({
-      menssage: "Dados atualizados com sucesso!",
-      user: updateUser,
-    });
-  } catch (error) {
-    console.error("Erro ao atualizar o usuario: ", error);
-    res.status(500).json({ message: "Ocorreu um erro inesperado" });
-  }
-}
-
 export default {
   registrar,
   login,
   me,
-  updateUser,
 };
