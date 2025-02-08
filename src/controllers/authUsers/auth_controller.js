@@ -71,7 +71,7 @@ async function login(req, res) {
       },
       process.env.SECRET,
       {
-        expiresIn: "10h",
+        expiresIn: "50000h",
       }
     );
 
