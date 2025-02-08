@@ -44,6 +44,7 @@ model Pedido {
   usuarioId Int
   usuario   User            @relation(fields: [usuarioId], references: [id])
   total     Float
+  status    String          @default("pendente") // Novo campo para o status do pedido
   produtos  ProdutosItens[]
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
