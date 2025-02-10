@@ -56,8 +56,8 @@ export const createCheckoutSession = async (req, res) => {
       payment_method_types: ["card"],
       line_items: lineItems, // Alterado para garantir que está pegando os valores corretos
       mode: "payment",
-      success_url: `${process.env.FRONTEND_URL}/sucesso`,
-      cancel_url: `${process.env.FRONTEND_URL}/cancelado`,
+      success_url: `${process.env.FRONTEND_URL}/success`,
+      cancel_url: `${process.env.FRONTEND_URL}/cancel`,
       metadata: {
         usuarioId: usuarioId,
         produtos: JSON.stringify(produtos),
@@ -74,8 +74,69 @@ export const createCheckoutSession = async (req, res) => {
 };
 
 // Webhook do Stripe para capturar eventos de pagamento
-export async function stripeWebhook(req, res) {
+// export async function stripeWebhook(req, res) {
+//   const sig = req.headers["stripe-signature"];
+
+//   let event;
+//   try {
+//     event = stripe.webhooks.constructEvent(
+//       req.body, // O corpo cru já é passado corretamente
+//       sig,
+//       process.env.STRIPE_WEBHOOK_SECRET
+//     );
+//   } catch (err) {
+//     console.error("Erro ao validar o webhook:", err.message);
+//     return res.status(400).send(`Webhook Error: ${err.message}`);
+//   }
+
+//   console.log("Evento recebido:", event.type);
+
+//   if (event.type === "checkout.session.completed") {
+//     const session = event.data.object;
+
+//     const usuarioId = session.metadata?.usuarioId;
+//     const produtos = session.metadata?.produtos
+//       ? JSON.parse(session.metadata.produtos)
+//       : [];
+
+//     if (!usuarioId || produtos.length === 0) {
+//       console.error("Usuário ou produtos inválidos.");
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Dados inválidos." });
+//     }
+
+//     try {
+//       const pedido = await prisma.pedido.create({
+//         data: {
+//           usuario: { connect: { id: Number(usuarioId) } },
+//           total: session.amount_total / 100,
+//           status: "pago",
+//           produtos: {
+//             create: produtos.map((p) => ({
+//               produtoId: p.produtoId,
+//               titulo: p.titulo,
+//               quantidade: p.quantidade,
+//               precoUnitario: p.preco,
+//             })),
+//           },
+//         },
+//       });
+
+//       console.log("Pedido criado com sucesso:", pedido);
+//     } catch (dbError) {
+//       console.error("Erro ao criar pedido:", dbError);
+//       return res
+//         .status(500)
+//         .json({ success: false, message: "Erro no banco de dados." });
+//     }
+//   }
+
+//   res.json({ received: true });
+// }
+export const stripeWebhook = (req, res) => {
   const sig = req.headers["stripe-signature"];
+
   let event;
 
   try {
@@ -89,49 +150,7 @@ export async function stripeWebhook(req, res) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  console.log("Evento recebido:", event.type);
-
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
-
-    const usuarioId = session.metadata?.usuarioId;
-    const produtos = session.metadata?.produtos
-      ? JSON.parse(session.metadata.produtos)
-      : [];
-
-    if (!usuarioId || produtos.length === 0) {
-      console.error("Usuário ou produtos inválidos.");
-      return res
-        .status(400)
-        .json({ success: false, message: "Dados inválidos." });
-    }
-
-    try {
-      // Criar pedido no banco
-      const pedido = await prisma.pedido.create({
-        data: {
-          usuario: { connect: { id: Number(usuarioId) } },
-          total: session.amount_total / 100,
-          status: "pago",
-          produtos: {
-            create: produtos.map((p) => ({
-              produtoId: p.produtoId,
-              titulo: p.titulo,
-              quantidade: p.quantidade,
-              precoUnitario: p.preco,
-            })),
-          },
-        },
-      });
-
-      console.log("Pedido criado com sucesso:", pedido);
-    } catch (dbError) {
-      console.error("Erro ao criar pedido:", dbError);
-      return res
-        .status(500)
-        .json({ success: false, message: "Erro no banco de dados." });
-    }
-  }
+  console.log("🔹 Evento recebido:", event.type);
 
   res.json({ received: true });
-}
+};

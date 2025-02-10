@@ -1,8 +1,6 @@
 import express from "express";
-
 import cors from "cors";
 import path from "path";
-
 import { fileURLToPath } from "url";
 import userRouter from "./routers/auth/userRouter.js";
 import productRouter from "./routers/products/router_products.js";
@@ -17,34 +15,37 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // Permita apenas seu frontend específico
+    origin: "http://localhost:5173", // Permite apenas seu frontend específico
     methods: ["GET", "POST", "DELETE", "PUT"], // Métodos permitidos
     credentials: true, // Habilita o envio de cookies e credenciais
   })
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Servir arquivos estáticos da pasta 'public'
-app.use(express.static(path.join(__dirname, "public")));
-
-// Rota para o home que vai retornar o arquivo HTML
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-app.use(userRouter);
-app.use(productRouter);
-app.use(orderRouter);
-
-// Rota do Stripe Webhook precisa do raw body antes do express.json()
+// 🚨 O Webhook do Stripe PRECISA vir antes de express.json()
 app.use(
   "/stripe/webhook",
   express.raw({ type: "application/json" }),
   stripeRouter
 );
 
-// Outras rotas...
+// Aplicar JSON e URL Encoded para as demais rotas
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Servir arquivos estáticos da pasta 'public'
+app.use(express.static(path.join(__dirname, "public")));
+
+// Rota para o home que retorna o arquivo HTML
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Rotas normais
+app.use(userRouter);
+app.use(productRouter);
+app.use(orderRouter);
+
+// Rota para outras funções do Stripe
 app.use("/stripe", stripeRouter);
 
 export default app;

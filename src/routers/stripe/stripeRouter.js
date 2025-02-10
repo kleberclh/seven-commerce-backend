@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.post("/checkout", createCheckoutSession);
 
-// O Webhook precisa receber o raw body do request
+// O Webhook precisa receber o raw body antes do JSON middleware
 router.post(
   "/webhook",
   express.raw({ type: "application/json" }),
