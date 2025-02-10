@@ -9,7 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 // Criar um checkout no Stripe
 export const createCheckoutSession = async (req, res) => {
   try {
-    const { produtos } = req.body;
+    const { produtos, usuarioId } = req.body;
 
     console.log("Produtos recebidos:", produtos);
 
@@ -45,7 +45,7 @@ export const createCheckoutSession = async (req, res) => {
         product_data: {
           name: produto.name,
         },
-        unit_amount: produto.price, // Preço real do produto
+        unit_amount: produto.price, // Já convertido para centavos na consulta
       },
       quantity: produto.quantity,
     }));
@@ -54,21 +54,12 @@ export const createCheckoutSession = async (req, res) => {
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
-      line_items: produtos.map((p) => ({
-        price_data: {
-          currency: "brl",
-          product_data: {
-            name: p.titulo,
-          },
-          unit_amount: Math.round(p.preco * 100),
-        },
-        quantity: p.quantidade,
-      })),
+      line_items: lineItems, // Alterado para garantir que está pegando os valores corretos
       mode: "payment",
       success_url: `${process.env.FRONTEND_URL}/sucesso`,
       cancel_url: `${process.env.FRONTEND_URL}/cancelado`,
       metadata: {
-        usuarioId: usuarioId.toString(),
+        usuarioId: usuarioId,
         produtos: JSON.stringify(produtos),
       },
     });
