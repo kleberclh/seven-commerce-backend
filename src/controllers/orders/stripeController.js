@@ -54,10 +54,23 @@ export const createCheckoutSession = async (req, res) => {
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
-      line_items: lineItems,
+      line_items: produtos.map((p) => ({
+        price_data: {
+          currency: "brl",
+          product_data: {
+            name: p.titulo,
+          },
+          unit_amount: Math.round(p.preco * 100),
+        },
+        quantity: p.quantidade,
+      })),
       mode: "payment",
-      success_url: `${process.env.FRONTEND_URL}/success`,
-      cancel_url: `${process.env.FRONTEND_URL}/cancel`,
+      success_url: `${process.env.FRONTEND_URL}/sucesso`,
+      cancel_url: `${process.env.FRONTEND_URL}/cancelado`,
+      metadata: {
+        usuarioId: usuarioId.toString(),
+        produtos: JSON.stringify(produtos),
+      },
     });
 
     console.log("Sessão criada:", session);
@@ -68,23 +81,42 @@ export const createCheckoutSession = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
 // Webhook do Stripe para capturar eventos de pagamento
 export async function stripeWebhook(req, res) {
   const sig = req.headers["stripe-signature"];
+  let event;
 
   try {
-    const event = stripe.webhooks.constructEvent(
-      req.rawBody,
+    event = stripe.webhooks.constructEvent(
+      req.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
+  } catch (err) {
+    console.error("Erro ao validar o webhook:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
 
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object;
-      const usuarioId = session.metadata.usuarioId;
-      const produtos = session.display_items;
+  console.log("Evento recebido:", event.type);
 
-      // Criar o pedido no banco de dados
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+
+    const usuarioId = session.metadata?.usuarioId;
+    const produtos = session.metadata?.produtos
+      ? JSON.parse(session.metadata.produtos)
+      : [];
+
+    if (!usuarioId || produtos.length === 0) {
+      console.error("Usuário ou produtos inválidos.");
+      return res
+        .status(400)
+        .json({ success: false, message: "Dados inválidos." });
+    }
+
+    try {
+      // Criar pedido no banco
       const pedido = await prisma.pedido.create({
         data: {
           usuario: { connect: { id: Number(usuarioId) } },
@@ -92,21 +124,23 @@ export async function stripeWebhook(req, res) {
           status: "pago",
           produtos: {
             create: produtos.map((p) => ({
-              produtoId: p.custom.id,
-              titulo: p.custom.name,
-              quantidade: p.quantity,
-              precoUnitario: p.amount / 100,
+              produtoId: p.produtoId,
+              titulo: p.titulo,
+              quantidade: p.quantidade,
+              precoUnitario: p.preco,
             })),
           },
         },
       });
 
-      console.log("Pedido criado:", pedido);
+      console.log("Pedido criado com sucesso:", pedido);
+    } catch (dbError) {
+      console.error("Erro ao criar pedido:", dbError);
+      return res
+        .status(500)
+        .json({ success: false, message: "Erro no banco de dados." });
     }
-
-    res.json({ received: true });
-  } catch (err) {
-    console.error("Webhook error:", err.message);
-    res.status(400).send(`Webhook Error: ${err.message}`);
   }
+
+  res.json({ received: true });
 }

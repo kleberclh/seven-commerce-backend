@@ -73,7 +73,7 @@ async function list(req, res) {
     const orders = await prisma.pedido.findMany({
       include: {
         usuario: { select: { id: true, uuid: true, name: true, email: true } },
-        produtos: { include: { produto: true } },
+        produtos: { include: { produto: true, } },
       },
     });
 

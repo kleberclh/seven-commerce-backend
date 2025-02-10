@@ -1,0 +1,29 @@
+name: Auto Update API Version
+
+on:
+  push:
+    branches:
+      - main # Ou outra branch que deseja monitorar
+
+jobs:
+  update_version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Incrementar versão
+        run: |
+          npm version patch -m "Incrementando versão para %s [skip ci]"
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+          git push origin main
+
+      - name: Deploy da API (opcional)
+        run: |
+          ssh user@seu-servidor 'cd /caminho-da-api && git pull && npm install && pm2 restart sua-api'
