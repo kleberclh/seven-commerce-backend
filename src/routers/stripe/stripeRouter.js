@@ -3,15 +3,17 @@ import {
   createCheckoutSession,
   stripeWebhook,
 } from "../../controllers/orders/stripeController.js";
+import authenticateToken from "../../middlewares/authUser/authenticateToken.js";
 
 const router = express.Router();
 
-router.post("/checkout", createCheckoutSession);
+// Rota de checkout com autenticação
+router.post("/checkout", authenticateToken, createCheckoutSession);
 
-// O Webhook precisa receber o raw body antes do JSON middleware
+// O Webhook precisa receber o corpo raw antes do JSON middleware, e não precisa do middleware de autenticação
 router.post(
   "/webhook",
-  express.raw({ type: "application/json" }),
+  express.raw({ type: "application/json" }), // Necessário para garantir que o corpo da requisição esteja no formato correto
   stripeWebhook
 );
 

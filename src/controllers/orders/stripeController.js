@@ -6,11 +6,11 @@ const prisma = new PrismaClient();
 config();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Criar um checkout no Stripe
 export const createCheckoutSession = async (req, res) => {
   try {
-    const { produtos, usuarioId } = req.body;
-
+    const { produtos } = req.body;
+    const userId = req.user.id;
+    console.log("Usuário ID:", userId);
     console.log("Produtos recebidos:", produtos);
 
     if (!produtos || !Array.isArray(produtos) || produtos.length === 0) {
@@ -59,7 +59,7 @@ export const createCheckoutSession = async (req, res) => {
       success_url: `${process.env.FRONTEND_URL}/success`,
       cancel_url: `${process.env.FRONTEND_URL}/cancel`,
       metadata: {
-        usuarioId: usuarioId,
+        usuarioId: userId,
         produtos: JSON.stringify(produtos),
       },
     });
@@ -74,69 +74,8 @@ export const createCheckoutSession = async (req, res) => {
 };
 
 // Webhook do Stripe para capturar eventos de pagamento
-// export async function stripeWebhook(req, res) {
-//   const sig = req.headers["stripe-signature"];
-
-//   let event;
-//   try {
-//     event = stripe.webhooks.constructEvent(
-//       req.body, // O corpo cru já é passado corretamente
-//       sig,
-//       process.env.STRIPE_WEBHOOK_SECRET
-//     );
-//   } catch (err) {
-//     console.error("Erro ao validar o webhook:", err.message);
-//     return res.status(400).send(`Webhook Error: ${err.message}`);
-//   }
-
-//   console.log("Evento recebido:", event.type);
-
-//   if (event.type === "checkout.session.completed") {
-//     const session = event.data.object;
-
-//     const usuarioId = session.metadata?.usuarioId;
-//     const produtos = session.metadata?.produtos
-//       ? JSON.parse(session.metadata.produtos)
-//       : [];
-
-//     if (!usuarioId || produtos.length === 0) {
-//       console.error("Usuário ou produtos inválidos.");
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "Dados inválidos." });
-//     }
-
-//     try {
-//       const pedido = await prisma.pedido.create({
-//         data: {
-//           usuario: { connect: { id: Number(usuarioId) } },
-//           total: session.amount_total / 100,
-//           status: "pago",
-//           produtos: {
-//             create: produtos.map((p) => ({
-//               produtoId: p.produtoId,
-//               titulo: p.titulo,
-//               quantidade: p.quantidade,
-//               precoUnitario: p.preco,
-//             })),
-//           },
-//         },
-//       });
-
-//       console.log("Pedido criado com sucesso:", pedido);
-//     } catch (dbError) {
-//       console.error("Erro ao criar pedido:", dbError);
-//       return res
-//         .status(500)
-//         .json({ success: false, message: "Erro no banco de dados." });
-//     }
-//   }
-
-//   res.json({ received: true });
-// }
-export const stripeWebhook = (req, res) => {
+export const stripeWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
-
   let event;
 
   try {
@@ -146,11 +85,87 @@ export const stripeWebhook = (req, res) => {
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
-    console.error("Erro ao validar o webhook:", err.message);
+    console.error("❌ Erro ao validar o webhook:", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   console.log("🔹 Evento recebido:", event.type);
 
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+    console.log("📝 Dados da sessão:", session);
+
+    const usuarioId = session.metadata?.usuarioId;
+    const produtos = session.metadata?.produtos
+      ? JSON.parse(session.metadata.produtos)
+      : [];
+
+    console.log("🔹 ID do usuário:", usuarioId);
+    console.log("🔹 Produtos recebidos:", produtos);
+
+    if (!usuarioId || produtos.length === 0) {
+      console.error("⚠️ Usuário ou produtos inválidos.");
+      return res
+        .status(400)
+        .json({ success: false, message: "Dados inválidos." });
+    }
+
+    try {
+      // Verificação do valor total
+      const valorTotal = session.amount_total / 100;
+      if (valorTotal <= 0) {
+        console.error("⚠️ Valor total inválido:", valorTotal);
+        return res
+          .status(400)
+          .json({ success: false, message: "Valor total inválido." });
+      }
+
+      // Criando o pedido
+      const pedido = await prisma.pedido.create({
+        data: {
+          usuario: { connect: { id: Number(usuarioId) } },
+          total: valorTotal,
+          status: "pago",
+          produtos: {
+            create: produtos.map((p) => ({
+              produtoId: p.produtoId,
+              titulo: p.titulo || "Produto desconhecido", // Garantir que o título existe
+              quantidade: p.quantidade,
+              precoUnitario: p.precoUnitario || p.price || 0, // Garantir que o preço existe
+            })),
+          },
+        },
+      });
+
+      console.log("✅ Pedido criado com sucesso:", pedido);
+    } catch (dbError) {
+      console.error("❌ Erro ao criar pedido:", dbError.message);
+      return res
+        .status(500)
+        .json({ success: false, message: "Erro no banco de dados." });
+    }
+  }
+
   res.json({ received: true });
 };
+
+// export const stripeWebhook = (req, res) => {
+//   const sig = req.headers["stripe-signature"];
+
+//   let event;
+
+//   try {
+//     event = stripe.webhooks.constructEvent(
+//       req.body,
+//       sig,
+//       process.env.STRIPE_WEBHOOK_SECRET
+//     );
+//   } catch (err) {
+//     console.error("Erro ao validar o webhook:", err.message);
+//     return res.status(400).send(`Webhook Error: ${err.message}`);
+//   }
+
+//   console.log("🔹 Evento recebido:", event.type);
+
+//   res.json({ received: true });
+// };
