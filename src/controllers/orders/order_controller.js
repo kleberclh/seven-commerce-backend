@@ -6,6 +6,8 @@ const prisma = new PrismaClient();
 async function create(req, res) {
   try {
     const usuarioId = req.user.id;
+
+    // Verifica se o usuário está autenticado
     if (!usuarioId) {
       return res
         .status(401)
@@ -20,6 +22,7 @@ async function create(req, res) {
       select: { id: true, preco: true, titulo: true },
     });
 
+    // Verificar se todos os produtos enviados existem no banco
     if (produtosNoBanco.length !== produtos.length) {
       return res
         .status(400)
@@ -29,7 +32,10 @@ async function create(req, res) {
     // Calcular o total com os preços originais
     const total = produtos.reduce((acc, item) => {
       const produto = produtosNoBanco.find((p) => p.id === item.produtoId);
-      return produto ? acc + produto.preco * item.quantidade : acc;
+      if (produto) {
+        return acc + produto.preco * item.quantidade;
+      }
+      return acc; // Caso o produto não seja encontrado, não acumula no total
     }, 0);
 
     // Criar o pedido e salvar os produtos com o preço fixo no momento da compra
@@ -37,6 +43,7 @@ async function create(req, res) {
       data: {
         usuario: { connect: { id: usuarioId } },
         total,
+        status: "pago", // Defina o status do pedido como "pago" ou conforme necessário
         produtos: {
           create: produtos.map((p) => {
             const produtoNoBanco = produtosNoBanco.find(
@@ -44,14 +51,14 @@ async function create(req, res) {
             );
             return {
               produtoId: p.produtoId,
-              titulo: produtoNoBanco?.titulo || "Produto desconhecido",
+              titulo: produtoNoBanco?.titulo || "Produto desconhecido", // Se não encontrar, atribui um valor padrão
               quantidade: p.quantidade,
               precoUnitario: produtoNoBanco?.preco || 0, // Mantém o preço do momento da compra
             };
           }),
         },
       },
-      include: { produtos: true },
+      include: { produtos: true }, // Inclui os produtos no retorno da criação do pedido
     });
 
     return res.status(201).json({
@@ -73,19 +80,17 @@ async function list(req, res) {
     const orders = await prisma.pedido.findMany({
       include: {
         usuario: { select: { id: true, uuid: true, name: true, email: true } },
-        produtos: { include: { produto: true, } },
+        produtos: { include: { produto: true } },
       },
     });
 
     res.json({ success: true, data: orders });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Ocorreu um erro ao listar os pedidos.",
-      });
+    res.status(500).json({
+      success: false,
+      message: "Ocorreu um erro ao listar os pedidos.",
+    });
   }
 }
 
@@ -137,12 +142,10 @@ async function update(req, res) {
     });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Ocorreu um erro ao atualizar o pedido.",
-      });
+    res.status(500).json({
+      success: false,
+      message: "Ocorreu um erro ao atualizar o pedido.",
+    });
   }
 }
 
@@ -156,12 +159,10 @@ async function remove(req, res) {
     res.json({ success: true, message: "Pedido excluído com sucesso." });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Ocorreu um erro ao excluir o pedido.",
-      });
+    res.status(500).json({
+      success: false,
+      message: "Ocorreu um erro ao excluir o pedido.",
+    });
   }
 }
 
