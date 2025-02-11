@@ -111,17 +111,27 @@ export const stripeWebhook = async (req, res) => {
     }
 
     try {
+      // Verificação do valor total
+      const valorTotal = session.amount_total / 100;
+      if (valorTotal <= 0) {
+        console.error("⚠️ Valor total inválido:", valorTotal);
+        return res
+          .status(400)
+          .json({ success: false, message: "Valor total inválido." });
+      }
+
+      // Criando o pedido
       const pedido = await prisma.pedido.create({
         data: {
           usuario: { connect: { id: Number(usuarioId) } },
-          total: session.amount_total / 100,
+          total: valorTotal,
           status: "pago",
           produtos: {
             create: produtos.map((p) => ({
               produtoId: p.produtoId,
               titulo: p.titulo || "Produto desconhecido", // Garantir que o título existe
               quantidade: p.quantidade,
-              precoUnitario: p.preco || 0, // Garantir que o preço existe
+              precoUnitario: p.precoUnitario || p.price || 0, // Garantir que o preço existe
             })),
           },
         },
@@ -129,7 +139,7 @@ export const stripeWebhook = async (req, res) => {
 
       console.log("✅ Pedido criado com sucesso:", pedido);
     } catch (dbError) {
-      console.error("❌ Erro ao criar pedido:", dbError);
+      console.error("❌ Erro ao criar pedido:", dbError.message);
       return res
         .status(500)
         .json({ success: false, message: "Erro no banco de dados." });

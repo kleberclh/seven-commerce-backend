@@ -51,9 +51,9 @@ async function create(req, res) {
             );
             return {
               produtoId: p.produtoId,
-              titulo: produtoNoBanco?.titulo || "Produto desconhecido", // Se não encontrar, atribui um valor padrão
+              titulo: produtoNoBanco.titulo || "Produto desconhecido", // Se não encontrar, atribui um valor padrão
               quantidade: p.quantidade,
-              precoUnitario: produtoNoBanco?.preco || 0, // Mantém o preço do momento da compra
+              precoUnitario: produtoNoBanco.preco || 0, // Mantém o preço do momento da compra
             };
           }),
         },
