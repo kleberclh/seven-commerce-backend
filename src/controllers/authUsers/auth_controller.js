@@ -96,6 +96,7 @@ async function me(req, res) {
         .status(401)
         .json({ success: false, message: "Usuário não encontrado." });
     }
+
     const user = await prisma.user.findUnique({
       where: {
         id: userId,
@@ -104,6 +105,11 @@ async function me(req, res) {
         pedidos: {
           include: {
             produtos: true,
+            user: {
+              select: {
+                name: true, // Inclui apenas o nome do usuário no pedido
+              },
+            },
           },
         },
       },

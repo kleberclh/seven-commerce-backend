@@ -24,13 +24,13 @@ model User {
 
   cpf         String? @unique
   telefone    String?
+  pais        String?
+  estado      String?
+  cidade      String?
+  bairro      String?
+  cep         String?
   rua         String?
   numero      String?
-  cep         String?
-  pais        String?
-  bairro      String?
-  cidade      String?
-  estado      String?
   complemento String?
   imagem      String?
 
