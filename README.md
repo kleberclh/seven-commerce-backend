@@ -1,8 +1,8 @@
-# Seven-Commerce API (v2.0.0)
+# Seven-Commerce  (v2.0.0)
 
-Bem-vindo à **Seven-Commerce API**, um sistema backend desenvolvido para gerenciar cadastros, estoque, pedidos e pagamentos de uma loja virtual.
+Bem-vindo à **Seven-Commerce**, um sistema backend desenvolvido para gerenciar cadastros, estoque, pedidos e pagamentos de uma loja virtual.
 
-## 🚀 Desenvolvido por Seven PK
+## 🚀 Desenvolvido por @kleberclh
 
 ---
 
@@ -33,8 +33,8 @@ Bem-vindo à **Seven-Commerce API**, um sistema backend desenvolvido para gerenc
 
 1. **Clone o repositório**
    ```sh
-   git clone https://github.com/seven-pk/seven-commerce-api.git
-   cd seven-commerce-api
+   git clone https://github.com/seven-pk/seven-commerce-backend.git
+   cd seven-commerce-backend
    ```
 
 2. **Instale as dependências**
@@ -46,7 +46,7 @@ Bem-vindo à **Seven-Commerce API**, um sistema backend desenvolvido para gerenc
    - Crie um arquivo `.env` na raiz do projeto e adicione:
      ```env
      DATABASE_URL="mysql://usuario:senha@localhost:3306/seven_commerce"
-     JWT_SECRET="sua_chave_secreta"
+     SECRET="sua_chave_secreta"
      STRIPE_SECRET_KEY="sua_chave_stripe"
      PAGSEGURO_TOKEN="seu_token_pagseguro"
      ```
@@ -66,35 +66,25 @@ Bem-vindo à **Seven-Commerce API**, um sistema backend desenvolvido para gerenc
 ## 📡 Rotas da API
 
 ### 🔐 Autenticação
-- **POST** `/auth/register` - Cadastro de usuário
-- **POST** `/auth/login` - Login e geração de token JWT
+- **POST** `/login` - Cadastro de usuário
+- **POST** `/registrar` - Login e geração de token JWT
 
 ### 📦 Produtos
-- **GET** `/products` - Listar produtos
-- **POST** `/products` - Criar produto
-- **PUT** `/products/:id` - Atualizar produto
-- **DELETE** `/products/:id` - Remover produto
+- **GET** `/produtos` - Listar produtos
+- **POST** `/produto` - Criar produto
+- **PUT** `/produto/:uuid` - Atualizar produto
+- **DELETE** `/produto/:uuid` - Remover produto
 
 ### 🛒 Pedidos
-- **GET** `/orders` - Listar pedidos
-- **POST** `/orders` - Criar um pedido
+- **GET** `/order` - Listar pedidos
+- **POST** `/order` - Criar um pedido
 
 ### 🛍️ Checkout
-- **POST** `/checkout/stripe` - Pagamento via Stripe
-- **POST** `/checkout/pagseguro` - Pagamento via PagSeguro
+- **POST** `/checkout` - Pagamento via Stripe
+- **POST** `/webhook` - Para recebimento do evento Webhook
 
 ---
 
-## 🛠️ Contribuição
-
-Se quiser contribuir com o projeto:
-1. **Faça um fork** do repositório.
-2. **Crie uma branch** com sua feature (`git checkout -b minha-feature`).
-3. **Commit suas alterações** (`git commit -m 'Adiciona nova funcionalidade'`).
-4. **Faça um push** para a branch (`git push origin minha-feature`).
-5. **Abra um Pull Request**.
-
----
 
 ## 📝 Licença
 
@@ -102,5 +92,5 @@ Este projeto está sob a licença **MIT**. Sinta-se livre para usá-lo e modific
 
 ---
 
-💡 **Seven PK - Soluções para e-commerce!**
+💡 **Desenvolvido por @kleberclh**
 
