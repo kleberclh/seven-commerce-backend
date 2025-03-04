@@ -68,6 +68,7 @@ Bem-vindo à **Seven-Commerce**, um sistema backend desenvolvido para gerenciar 
 ### 🔐 Autenticação
 - **POST** `/login` - Cadastro de usuário
 - **POST** `/registrar` - Login e geração de token JWT
+- **GET** `/me` - Rota autenticada que retorna as informações do usuário, incluindo se é Admin e os dados básicos do cadastro.
 
 ### 📦 Produtos
 - **GET** `/produtos` - Listar produtos
