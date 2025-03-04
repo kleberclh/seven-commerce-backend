@@ -25,7 +25,7 @@ Bem-vindo à **Seven-Commerce**, um sistema backend desenvolvido para gerenciar 
 - **Prisma ORM** (Gerenciamento do banco de dados)
 - **MySQL** (Banco de dados relacional)
 - **JWT** (Autenticação segura de usuários)
-- **Stripe & PagSeguro** (Integração com pagamentos)
+- **Stripe** (Integração com pagamentos)
 
 ---
 
