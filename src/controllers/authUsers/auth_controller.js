@@ -105,7 +105,7 @@ async function me(req, res) {
         pedidos: {
           include: {
             produtos: true,
-            user: {
+            usuario: {
               select: {
                 name: true, // Inclui apenas o nome do usuário no pedido
               },
