@@ -48,7 +48,6 @@ Bem-vindo à **Seven-Commerce**, um sistema backend desenvolvido para gerenciar 
      DATABASE_URL="mysql://usuario:senha@localhost:3306/seven_commerce"
      SECRET="sua_chave_secreta"
      STRIPE_SECRET_KEY="sua_chave_stripe"
-     PAGSEGURO_TOKEN="seu_token_pagseguro"
      ```
 
 4. **Execute as migrações do banco**
