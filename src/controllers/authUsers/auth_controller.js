@@ -66,6 +66,7 @@ async function login(req, res) {
       {
         uuid: user.uuid,
         name: user.name,
+        email: user.email,
         isAdmin: user.isAdmin,
         userId: user.id,
       },
@@ -79,6 +80,7 @@ async function login(req, res) {
       token,
       user_uuid: user.uuid,
       name: user.name,
+      email: user.email,
       isAdmin: user.isAdmin,
       userId: user.id,
     });
