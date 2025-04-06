@@ -15,7 +15,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // Permite apenas seu frontend específico
+    origin: "http://localhost:3000", // Permite apenas seu frontend específico
     methods: ["GET", "POST", "DELETE", "PUT"], // Métodos permitidos
     credentials: true, // Habilita o envio de cookies e credenciais
   })
